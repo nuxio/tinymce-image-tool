@@ -13,22 +13,46 @@ function fetchImageData(url: string): Promise<Blob> {
   })
 }
 
+let current: HTMLImageElement = null
+
 const setup = (editor, url) => {
   editor.ui.registry.addButton('image', {
     icon: "rotate-left",
     tooltip: "Insert Current Date",
     onAction: () => {
       // tslint:disable-next-line:no-console
-      editor.setContent('<p><img src="https://static.boredpanda.com/blog/wp-content/uploads/2018/04/handicapped-cat-rexie-the-handicat-dasha-minaeva-58-5acb4f1931e1b__700.jpg" /></p><p>233</p>');
+      editor.setContent('<p><img width="200" height="200" src="/src/demo/cat.jpg" /></p><p>233</p>');
     }
   });
+
+  editor.addCommand('mceImageRotateLeft', function () {
+    // const canvas = document.createElement('canvas')
+    // const ctx = canvas.getContext('2d')
+    // canvas.height = current.naturalHeight || current.height
+    // canvas.width = current.naturalWidth || current.width
+
+    // ctx.drawImage(current, 0, 0)
+    // ctx.translate(canvas.width/2, canvas.height/2)
+    // ctx.rotate(90)
+  })
+
+  editor.ui.registry.addButton("imageRotateleft", {
+    tooltip: "Rotate counterclockwise",
+    icon: "rotate-right",
+    onAction: () => {
+      editor.execCommand("mceImageRotateLeft")
+    },
+  })
 
   editor.on('NodeChange', function({ element }, parents) {
     const url: string = element.getAttribute('src') || ''
     if (element.tagName === 'IMG' && url) {
-      fetchImageData(url).then((blob: Blob) => {
+      current = element
+      fetchImageData(url).then(blob => {
         element.setAttribute('src', window.URL.createObjectURL(blob))
       })
+    } else if (current) {
+      current = null
     }
   })
 
@@ -36,7 +60,7 @@ const setup = (editor, url) => {
     predicate: function (node) {
       return node.nodeName.toLowerCase() === 'img'
     },
-    items: 'alignleft aligncenter alignright',
+    items: 'imageRotateleft',
     position: 'node',
     scope: 'node'
   });

@@ -14,5 +14,29 @@
     <p>Lobortis potenti urna leo gravida porttitor curae proin placerat tempus consequat lorem, sem dictumst imperdiet mattis velit congue maximus lectus egestas per orci, posuere dis semper varius ante senectus quisque pretium vivamus fringilla.</p>
   </textarea>
 
+  <img id="img" width="200" height="200" src="../cat.jpg">
+  <button id="b">Rotate</button>
+  <script>
+    document.body.querySelector('#b').addEventListener('click', function () {
+      const img = document.querySelector('#img')
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      canvas.height = img.naturalHeight || img.height
+      canvas.width = img.naturalWidth || img.width
+      document.body.appendChild(canvas)
+
+      var xpos = canvas.width / 2;
+      var ypos = canvas.height / 2;
+      //原图
+      ctx.drawImage(img, xpos - img.width / 2, ypos - img.height / 2);
+      ctx.save();
+      //旋转图
+      ctx.translate(xpos, ypos);
+      ctx.rotate(47 * Math.PI / 180);//旋转47度
+      ctx.translate(-xpos, -ypos);
+      ctx.drawImage(img, xpos - img.width / 2, ypos - img.height / 2);
+      ctx.restore();
+    })
+  </script>
 </body>
 </html>
