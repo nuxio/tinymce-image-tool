@@ -1,7 +1,9 @@
 {
   "defaultSeverity": "error",
   "extends": [
-      "@ephox/tslint-rules/tslint.json"
+    "tslint:all",
+    "tslint-config-prettier",
+    "tslint-plugin-prettier"
   ],
   "jsRules": {},
   "rules": {},
