@@ -4,11 +4,11 @@ import { rotate, flipHorizontal, flipVertical, getImageBlob } from "./util";
 let current: HTMLImageElement = null;
 
 const setup = (editor, url) => {
-  editor.ui.registry.addButton("image", {
-    icon: "rotate-left",
-    tooltip: "Insert Current Date",
+  editor.ui.registry.addButton("image-tool", {
+    icon: "edit-image",
+    tooltip: "Edit image",
     onAction: () => {
-      console.log("123");
+      editor.execCommand("mceEditImage")
     }
   });
 
@@ -29,39 +29,59 @@ const setup = (editor, url) => {
   });
 
   editor.addCommand("mceEditImage", function() {
-    const blob = getImageBlob(current)
+    if (!current) {
+      return false
+    }
+
+    const blob = getImageBlob(current);
 
     editor.windowManager.open({
-        title: "Edit Image",
-        size: "large",
-        body: {
-            type: "panel",
-            items: [{
-                type: "imagetools",
-                name: "imagetools",
-                label: "Edit Image",
-                currentState: blob,
-            }]
+      title: "Edit Image",
+      size: "large",
+      body: {
+        type: "panel",
+        items: [
+          {
+            type: "imagetools",
+            name: "imagetools",
+            label: "Edit Image",
+            currentState: blob
+          }
+        ]
+      },
+      buttons: [
+        {
+          type: "cancel",
+          name: "cancel",
+          text: "Cancel"
         },
-        buttons: [{
-            type: "cancel",
-            name: "cancel",
-            text: "Cancel"
-        }, {
-            type: "submit",
-            name: "save",
-            text: "Save",
-            primary: true,
-            disabled: true
-        }],
-        onSubmit: function() {
-          console.log('fuck')
-        },
-        onCancel: function() {},
-        onAction: function(t, e) {
-          console.log(arguments)
+        {
+          type: "submit",
+          name: "save",
+          text: "Save",
+          primary: true,
+          disabled: true
         }
-    })
+      ],
+      onSubmit: function(dialog) {
+        const blob = dialog.getData().imagetools.blob;
+        current.setAttribute("src", window.URL.createObjectURL(blob));
+        dialog.close();
+      },
+      onCancel: function() {},
+      onAction: function(dialog, action) {
+        switch (action.name) {
+          case "save-state":
+            action.value ? dialog.enable("save") : dialog.disable("save");
+            break;
+          case "disable":
+            dialog.disable("save"), dialog.disable("cancel");
+            break;
+          case "enable":
+            dialog.enable("cancel");
+        }
+      }
+    });
   });
 
   editor.ui.registry.addButton("imageRotateLeft", {
@@ -97,15 +117,12 @@ const setup = (editor, url) => {
   });
 
   editor.ui.registry.addButton("editimage", {
-      tooltip: "Edit image",
-      icon: "edit-image",
-      onAction: () => {
-        editor.execCommand("mceEditImage");
-      },
-      onSetup: function(n) {
-        console.log(n)
-      }
-  })
+    tooltip: "Edit image",
+    icon: "edit-image",
+    onAction: () => {
+      editor.execCommand("mceEditImage");
+    }
+  });
 
   editor.on("NodeChange", function({ element }, parents) {
     const url: string = element.getAttribute("src") || "";
@@ -124,9 +141,23 @@ const setup = (editor, url) => {
     position: "node",
     scope: "node"
   });
+
+  editor.ui.registry.addMenuItem('image-tool', {
+    icon: 'edit-image',
+    text: 'Edit image',
+    onAction: () => {
+      editor.execCommand("mceEditImage");
+    }
+  });
+
+  editor.ui.registry.addContextMenu("image-tool", {
+    update: function (element) {
+      return !element.src ? '' : 'image-tool';
+    }
+  });
 };
 
-tinymce.PluginManager.add("image", setup);
+tinymce.PluginManager.add("image-tool", setup);
 
 // tslint:disable-next-line:no-empty
 export default () => {};
